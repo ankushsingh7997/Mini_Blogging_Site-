@@ -63,6 +63,7 @@ const login = async(req, res) => {
         return res.status(400).send({ status: false, message: "Please provide password" })
     }
       password=password.trim()
+      if(password=='') return res.status(400).send({status:false,message:'password cannot be empty'})
 
 
       let checkUser = await author.findOne({ email: email }).select({ email: 1, password: 1 })
