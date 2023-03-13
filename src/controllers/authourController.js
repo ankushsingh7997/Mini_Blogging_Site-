@@ -6,61 +6,79 @@ const createAuthor=async function(req,res){
   try {
     let data=req.body;
    
-    if(!data.fname||!data.lname||!data.title||!data.email||!data.password) return res.status(400).send({status:false,msg:"please fill all the fields"})
-
+    if(!data.fname||!data.lname||!data.title||!data.email||!data.password) return res.status(400).send({status:false,message:"please fill all the fields"})
+// first name setup
+    if(!data.fname) return res.status(400).send({status:false,message:"first name is a mendatory field"})
     let fname=data.fname.trim().split(" ").join("")
-    
-    let lname=data.lname.trim().split(" ").join("")
-   data.fname=fname;
-   data.lname=lname;
+    data.fname=fname;
+    if(!validator.isAlpha(data.fname))  return res.status(400).send({status:false,message:"invalid first name"})
 
-    if(!validator.isAlpha(data.fname)||!validator.isAlpha(data.lname))  return res.status(400).send({status:false,msg:"invalid name"})
-     
+
+// last name setup
+    if(!data.lname) return res.status(400).send({status:false,message:"last name is a mendatory field"})
+    let lname=data.lname.trim().split(" ").join("")
+    data.lname=lname;
+    if(!validator.isAlpha(data.lname))  return res.status(400).send({status:false,message:"invalid last name"})
+
+// title setup
+     if(!data.title) return res.status(400).send({status:false,message:"title is a mendatory field"})
     if ( data.title != "Mr" && data.title != "Mrs" &&  data.title != "Miss") {
-            return res.status(400).send({ status: false, msg: "Invalid Title - The title should be in [Mr / Mrs / Miss]" })
+            return res.status(400).send({ status: false, message: "Invalid Title - The title should be in [Mr / Mrs / Miss]" })
         }
 
-     if(!(validator.isEmail(req.body.email))) return res.status(400).send({status:false,result:"please put a valid email"})
+// email setup
+    if(!data.email) return res.status(400).send({status:false,message:"email is a mendatory field"})
+    data.email=data.email.trim();
+    if(data.email=='') return res.status(400).send({status:false,message:"email cannot be empty"})
+     if(!(validator.isEmail(!data.email))) return res.status(400).send({status:false,message:"please put a valid email"})
+     data.email=data.email.toLowerCase();
      
+// password setup
+
+if(!data.password) return res.status(400).send({status:false,message:"password is a mendatory field"})
      if (!validator.isStrongPassword(data.password)) {
-      return res.status(400).send({ status: false, msg: "Kindly use atleast one uppercase alphabets, numbers and special characters for strong password." })
+      return res.status(400).send({ status: false, message: "Kindly use atleast one uppercase alphabets, numbers and special characters for strong password." })
 }
 let checkEmail=await author.findOne({email:data.email})
-if(checkEmail) return res.status(400).send({status:false,result:"email already exists"})
+if(checkEmail) return res.status(400).send({status:false,message:"email already exists"})
      
      let setData=await author.create(data);
     res.status(201).send({status:true,data:setData});
 }catch(error){
-    res.status(500).send({status:false,error:error.message})
+    res.status(500).send({status:false,message:error.message})
 }
 }
 
 const login = async(req, res) => {
   try {
-      let username = req.body.email
+      let email = req.body.email.toLowerCase()
       let password = req.body.password
 
-      if (!username || !password) {
-          return res.status(400).send({ status: false, msg: "Please Enter email id and password both." })
+      if (!email) {
+          return res.status(400).send({ status: false, message: "Please Enter email id" })
+      }
+      email=email.trim()
+
+      if (!password) {
+        return res.status(400).send({ status: false, message: "Please provide password" })
+    }
+      password=password.trim()
+
+
+      let checkUser = await author.findOne({ email: email }).select({ email: 1, password: 1 })
+
+      if (!checkUser) {
+          return res.status(400).send({ status: false, message: "Email Id and password are not matched" })
       }
 
-      let auth = await author.findOne({ email: username }).select({ email: 1, password: 1 })
-
-      if (!auth) {
-          return res.status(400).send({ status: false, msg: "Email Id and password are not matched" })
-      }
-      if (password !== auth.password) {
-          return res.status(401).send({ status: false, msg: ". Enter the correct password." })
-      }
-
-      let token = jwt.sign({ authorId: auth._id.toString(), batch: "californium"}, //payload
+      let token = jwt.sign({ authorId: checkUser._id.toString(), batch: "californium"}, //payload
           "californium-blog" //secret key
       );
       res.setHeader("x-api-key", token)
-      res.status(201).send({ status: true, data: token })
+     return res.status(201).send({ status: true, data: token })
 
   } catch (error) {
-      res.status(500).send({ status: false, msg: error.message })
+      res.status(500).send({ status: false, message: error.message })
   }
 }
 
