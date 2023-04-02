@@ -1,16 +1,7 @@
-const jwt = require("jsonwebtoken");
-const validator = require("validator")
 const blogModel=require('../modules/bloggModel')
 const authorModel=require('../modules/authorModel');
+const {isValidObjectId}=require('mongoose');
 
-
-
-const idcheck = function(value) {
-    let a = validator.isMongoId(value)
-    if (!a) {
-        return true
-    } else return false
-}
 
 //-------------------------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +9,7 @@ const createBlog=async (req,res)=>{
  try{
     if(!req.body.title||!req.body.category||!req.body.body||!req.body.authorId) return res.status(400).send({Error:" Please enter require key- title,category,body,authorId"})
     
-    if(idcheck(req.body.authorId)) return res.status(404).send({error:"ID Incorrect"});
+    if(!isValidObjectId(req.body.authorId)) return res.status(404).send({error:"ID Incorrect"});
 
     const authorID=await authorModel.findById(req.body.authorId);
 
@@ -44,7 +35,7 @@ const getBlogs = async function(req,res){
         const {authorId,category,tags,subcategory} = req.query
 
         if (authorId) {
-            if (idcheck(authorId)) {
+            if (!isValidObjectId(authorId)) {
                 return res.status(400).send({ status: false, msg: "Enter valid authorId" })
             } else {
                 result.authorId = authorId
@@ -78,7 +69,7 @@ const updateBlog = async function(req, res) {
 
         let final = { isPublished: true, publishedAt: Date.now()}
         const data = req.params.blogId
-        if(idcheck(data)) return res.status(400).send({ status: false, msg: "Enter valid authorId" }) // ----added
+        if(!isValidObjectId(data)) return res.status(400).send({ status: false, msg: "Enter valid authorId" }) // ----added
         
         const { title, body, tags, subcategory } = req.body
         
@@ -158,7 +149,7 @@ final.subcategory=updatedSubcategory;
 const deletById=async function(req,res){
     try{    
     let blogid=req.params.blogId;
-     if(idcheck(blogid)) return res.status(400).send({ status: false, msg: "Enter valid authorId" })//-----added    
+     if(!isValidObjectId(blogid)) return res.status(400).send({ status: false, msg: "Enter valid authorId" })//-----added    
 
     let id= await blogModel.findById(blogid);
     if(!id) return res.status(404).send("Blogg not found")
@@ -184,7 +175,7 @@ const deleteQuery = async function(req, res) {
         return res.status(400).send({ status: false, msg: "Kindly enter any value" })
     }
     if(authorId){   
-    if(idcheck(authorId)) return res.status(400).send({ status: false, msg: "Enter valid authorId" })
+    if(!isValidObjectId(authorId)) return res.status(400).send({ status: false, msg: "Enter valid authorId" })
 
     
     let authorLoggedIn = req.token

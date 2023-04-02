@@ -6,7 +6,7 @@ const createAuthor=async function(req,res){
   try {
     let data=req.body;
    
-    if(!data.fname||!data.lname||!data.title||!data.email||!data.password) return res.status(400).send({status:false,message:"please fill all the fields"})
+    // if(!data.fname||!data.lname||!data.title||!data.email||!data.password) return res.status(400).send({status:false,message:"please fill all the fields"})
 // first name setup
     if(!data.fname) return res.status(400).send({status:false,message:"first name is a mendatory field"})
     let fname=data.fname.trim().split(" ").join("")
@@ -43,9 +43,9 @@ let checkEmail=await author.findOne({email:data.email})
 if(checkEmail) return res.status(400).send({status:false,message:"email already exists"})
      
      let setData=await author.create(data);
-    res.status(201).send({status:true,data:setData});
+    return res.status(201).send({status:true,data:setData});
 }catch(error){
-    res.status(500).send({status:false,message:error.message})
+   return  res.status(500).send({status:false,message:error.message})
 }
 }
 
@@ -71,6 +71,7 @@ const login = async(req, res) => {
       if (!checkUser) {
           return res.status(400).send({ status: false, message: "Email Id and password are not matched" })
       }
+      // Generate token
 
       let token = jwt.sign({ authorId: checkUser._id.toString(), batch: "californium"}, //payload
           "californium-blog" //secret key
@@ -79,7 +80,7 @@ const login = async(req, res) => {
      return res.status(201).send({ status: true, data: token })
 
   } catch (error) {
-      res.status(500).send({ status: false, message: error.message })
+      return res.status(500).send({ status: false, message: error.message })
   }
 }
 
