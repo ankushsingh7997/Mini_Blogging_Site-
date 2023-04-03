@@ -59,7 +59,7 @@ const getBlogs = async function(req,res){
 
         if (authorId) {
             if (!isValidObjectId(authorId)) {
-                return res.status(400).send({ status: false, msg: "Enter valid authorId" })
+                return res.status(400).send({ status: false, message: "Enter valid authorId" })
             } else {
                 blogObject.authorId = authorId
             }
@@ -91,27 +91,27 @@ const updateBlog = async function(req, res) {
 
     try {
 
-        let final = { isPublished: true, publishedAt: Date.now()}
-        const data = req.params.blogId
-        if(!isValidObjectId(data)) return res.status(400).send({ status: false, msg: "Enter valid authorId" }) // ----added
+        let updateBlogObject = { isPublished: true, publishedAt: Date.now()}
+        const blogId = req.params.blogId
+        if(!isValidObjectId(blogId)) return res.status(400).send({ status: false, message: "Enter valid blogId" }) 
         
         const { title, body, tags, subcategory } = req.body
         
         if (Object.keys(req.body).length === 0) {
-            return res.status(400).send({ status: false, msg: "Please enter details" })
+            return res.status(400).send({ status: false, message: "Please enter details" })
         }
 
-        let blogData = await blogModel.findOne({ _id: data});
+        let blogData = await blogModel.findOne({ _id: blogId});
 
-        if(!blogData) return res.status(404).send({ status:false, msg:"Blog not found"})
+        if(!blogData) return res.status(404).send({ status: false, message:"Blog not found"})
 
-        if (blogData.isDeleted == true) return res.status(404).send({ status: false, msg: "Blog is deleted" })
+        if (blogData.isDeleted == true) return res.status(404).send({ status: false, message: "Blog is deleted" })
 
         if (title) {
-            final.title = title
+            updateBlogObject.title = title
         }
         if (body) {
-            final.body = body
+            updateBlogObject.body = body
         }
         if(tags){
             let result=[]
@@ -121,18 +121,20 @@ const updateBlog = async function(req, res) {
                 {
                     if(typeof tags[i]!=="string")
                     {
-                        return res.status(404).send({result:"invalid data passed in tags"})
+                        return res.status(400).send({status: false, message:"invalid data passed in tags"})
                     }
                 }
-              result=[...tags]}
+              result=[...tags]
+            }
               else if(typeof tags==="string")
-
-             {result.push(tags)}
+             {
+                result.push(tags)
+             }
             else{
-               return res.status(400).send({status:false,error:"Invalid data pass "})
+               return res.status(400).send({status:false,message:"Invalid data pass "})
            }
        let updatedTag=[...blogData.tags,...result]
-         final.tags=updatedTag;
+         updateBlogObject.tags=updatedTag;
 }
 
 if(subcategory){
@@ -143,28 +145,29 @@ if(subcategory){
         {
             if(typeof subcategory[i]!=="string")
             {
-                return res.status(404).send({result:"invalid data passed in subcategory"})
+                return res.status(400).send({status: false, message:"invalid data passed in subcategory"})
             }
         }
-        console.log(subcategory)
+        
         result=[...subcategory]
     }
    else if(typeof subcategory==="string")
     {result.push(subcategory)}   
     else
     {
-        
-       return res.status(404).send({result:"invalid data passed in subcategory"})
+        return res.status(404).send({status: false, message:"invalid data passed in subcategory"})
     }
+    
+    let updatedSubcategory=[...blogData.subcategory,...result]
+    updateBlogObject.subcategory=updatedSubcategory;
 
-let updatedSubcategory=[...blogData.subcategory,...result]
-final.subcategory=updatedSubcategory;
 }
+      let result = await blogModel.findOneAndUpdate({ _id: blogId }, updateBlogObject, { new: true })
+      return res.status(200).send({ status: true, data: result })
             
-        let result = await blogModel.findOneAndUpdate({ _id: data }, final, { new: true })
-        return res.status(200).send({ status: true, data: result })
-    } catch (error) {
-        return res.status(500).send({ status: false, msg: error.message})
+    }
+     catch (error) {
+        return res.status(500).send({ status: false, message: error.message})
 }
 };
 
