@@ -7,7 +7,8 @@ const app=express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}));
 
-mongoose.connect("mongodb+srv://jassu_172:jassusharma123@cluster0.fhbdfgf.mongodb.net/test", {
+
+mongoose.connect("mongodb+srv://Vishanksingh:7997@cluster0.ga4iiwd.mongodb.net/miniblogging", {
     useNewUrlParser: true
 })
 .then( () => console.log("MongoDb is connected"))
@@ -17,6 +18,5 @@ mongoose.connect("mongodb+srv://jassu_172:jassusharma123@cluster0.fhbdfgf.mongod
 
 app.use('/',route)
 app.listen(3000,function(){
-
     console.log('express is running on port 3000')
 });

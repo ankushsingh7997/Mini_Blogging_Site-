@@ -30,7 +30,7 @@ const createAuthor=async function(req,res){
     if(!data.email) return res.status(400).send({status:false,message:"email is a mendatory field"})
     data.email=data.email.trim();
     if(data.email=='') return res.status(400).send({status:false,message:"email cannot be empty"})
-     if(!(validator.isEmail(!data.email))) return res.status(400).send({status:false,message:"please put a valid email"})
+     if(!(validator.isEmail(data.email))) return res.status(400).send({status:false,message:"please put a valid email"})
      data.email=data.email.toLowerCase();
      
 // password setup
@@ -41,10 +41,12 @@ if(!data.password) return res.status(400).send({status:false,message:"password i
 }
 let checkEmail=await author.findOne({email:data.email})
 if(checkEmail) return res.status(400).send({status:false,message:"email already exists"})
+
      
      let setData=await author.create(data);
     return res.status(201).send({status:true,data:setData});
 }catch(error){
+    console.log('here')
    return  res.status(500).send({status:false,message:error.message})
 }
 }

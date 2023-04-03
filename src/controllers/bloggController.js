@@ -7,7 +7,7 @@ const {isValidObjectId}=require('mongoose');
 
 const createBlog=async (req,res)=>{
  try{
-    if(!req.body.title||!req.body.category||!req.body.body||!req.body.authorId) return res.status(400).send({Error:" Please enter require key- title,category,body,authorId"});
+    
     const blogObject={};
     
   
@@ -27,10 +27,18 @@ const createBlog=async (req,res)=>{
     if(req.body.tags) blogObject.tags=req.body.tags;
 
     //category
-      if(!req.body.authorId) return res.status(400).send({status:false,message:'authorId is a mendatory field'});
-      req.body.authorId=req.body.authorId.trim();
-      if(req.body.authorId=='')  return res.status(400).send({status:false,message:'authorId cannot be empty'});
-      blogObject.authorId=req.body.authorId;
+      if(!req.body.category) return res.status(400).send({status:false,message:'category is a mendatory field'});
+      req.body.category=req.body.category.trim();
+      if(req.body.category=='')  return res.status(400).send({status:false,message:'category cannot be empty'});
+      blogObject.category=req.body.category;
+
+      // isPublished
+      if(req.body.isPublished)
+      {
+      if(typeof req.body.isPublished != 'boolean') return res.status(400).send({status:false,message:'isPublished should be boolean only'});
+      blogObject.isPublished=req.body.isPublished
+
+      }
 
     // authorId
     if(!req.body.authorId) return res.status(400).send({status:false,message:'authorId is a mendatory field'});
@@ -38,8 +46,9 @@ const createBlog=async (req,res)=>{
     if(req.body.authorId=='')  return res.status(400).send({status:false,message:'authorId cannot be empty'});
     // verification of authorId
     if(!isValidObjectId(req.body.authorId)) return res.status(400).send({status:false,message:"Incorrect authorID"});
-     const authorID=await authorModel.findById(req.body.authorId);
-    if(!authorID) return res.status(404).send({status:false,message:"no author found with this authorID"});
+    //  const authorID=await authorModel.findById(req.body.authorId);
+    // if(!authorID) return res.status(404).send({status:false,message:"no author found with this authorID"});
+    if(req.token!=req.body.authorId) return res.status(400).send({status:false,message:"Invalid user"});
     blogObject.authorId=req.body.authorId
 
     const createdData=await blogModel.create(blogObject)
