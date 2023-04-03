@@ -176,19 +176,19 @@ if(subcategory){
 const deletById=async function(req,res){
     try{    
     let blogid=req.params.blogId;
-     if(!isValidObjectId(blogid)) return res.status(400).send({ status: false, msg: "Enter valid authorId" })//-----added    
+     if(!isValidObjectId(blogid)) return res.status(400).send({ status: false, message: "Enter valid authorId" })//-----added    
 
-    let id= await blogModel.findById(blogid);
-    if(!id) return res.status(404).send("Blogg not found")
+    let blogData= await blogModel.findById(blogid);
+    if(!blogData) return res.status(404).send({status: false, message:"Blogg not found"})
 
-    if(id.isDeleted==true) return res.status(404).send("no such id")
+    if(blogData.isDeleted) return res.status(404).send({status: false, message:"no such id"})
 
-    let blogDeleted=await blogModel.findOneAndUpdate({_id:id},{isDeleted:true,deletedAt:Date.now()},{new:true})
+    await blogModel.findOneAndUpdate({_id:blogData},{isDeleted:true,deletedAt:Date.now()})
     
-    return res.status(200).send("blogg is deleted")
+    return res.status(200).send({status: false, message:"blogg is deleted"})
      
 } catch(error){
-    res.status(500).send({satus:false,msg:error.message})
+    return res.status(500).send({satus:false,message:error.message})
 
 }};
 
