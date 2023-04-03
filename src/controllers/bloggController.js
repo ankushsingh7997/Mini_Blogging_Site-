@@ -207,7 +207,7 @@ const deleteQuery = async function(req, res) {
      
     const { category, authorId, isPublished, tags, subCategory } = req.query
 
-    if (!category || !authorId || !isPublished || !tags || !subCategory) {
+    if (!category && !authorId && !isPublished && !tags && !subCategory) {
         return res.status(400).send({ status: false, message: "Kindly enter some data" })
     }
     if(authorId){   
@@ -221,7 +221,7 @@ const deleteQuery = async function(req, res) {
 
     if(check.length==0) return res.status(404).send({status: false, message:"no such blog"})
   
-    const update = await blogModel.updateMany({authorId:req.token,...req.query,isDeleted:false}, 
+     await blogModel.updateMany({authorId:req.token,...req.query,isDeleted:false}, 
     { isDeleted: true, deletedAt: Date.now(), new: true })
     return res.status(200).send({ status: true, data:`${check.length} data deleted`})
 }
