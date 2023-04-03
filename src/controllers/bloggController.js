@@ -7,22 +7,45 @@ const {isValidObjectId}=require('mongoose');
 
 const createBlog=async (req,res)=>{
  try{
-    if(!req.body.title||!req.body.category||!req.body.body||!req.body.authorId) return res.status(400).send({Error:" Please enter require key- title,category,body,authorId"})
+    if(!req.body.title||!req.body.category||!req.body.body||!req.body.authorId) return res.status(400).send({Error:" Please enter require key- title,category,body,authorId"});
+    const blogObject={};
     
-    if(!isValidObjectId(req.body.authorId)) return res.status(404).send({error:"ID Incorrect"});
-
-    const authorID=await authorModel.findById(req.body.authorId);
-
-    if(!authorID) return res.status(404).send({error:"invalid author id"});
-
+  
+        // title
+    if(!req.body.title) return res.status(400).send({status:false,message:'title is a mendatory field'});
     req.body.title=req.body.title.trim();
+    if(req.body.title=='')  return res.status(400).send({status:false,message:'title cannot be empty'});
+    blogObject.title=req.body.title;
 
+    // body
+    if(!req.body.body) return res.status(400).send({status:false,message:'body is a mendatory field'});
     req.body.body=req.body.body.trim();
+    if(req.body.body=='')  return res.status(400).send({status:false,message:'body cannot be empty'});
+    blogObject.body=req.body.body;
 
-    const create=await blogModel.create(req.body)
-    res.status(201).send({status:true,msg:create})
+    // tags
+    if(req.body.tags) blogObject.tags=req.body.tags;
+
+    //category
+      if(!req.body.authorId) return res.status(400).send({status:false,message:'authorId is a mendatory field'});
+      req.body.authorId=req.body.authorId.trim();
+      if(req.body.authorId=='')  return res.status(400).send({status:false,message:'authorId cannot be empty'});
+      blogObject.authorId=req.body.authorId;
+
+    // authorId
+    if(!req.body.authorId) return res.status(400).send({status:false,message:'authorId is a mendatory field'});
+    req.body.authorId=req.body.authorId.trim();
+    if(req.body.authorId=='')  return res.status(400).send({status:false,message:'authorId cannot be empty'});
+    // verification of authorId
+    if(!isValidObjectId(req.body.authorId)) return res.status(400).send({status:false,message:"Incorrect authorID"});
+     const authorID=await authorModel.findById(req.body.authorId);
+    if(!authorID) return res.status(404).send({status:false,message:"no author found with this authorID"});
+    blogObject.authorId=req.body.authorId
+
+    const createdData=await blogModel.create(blogObject)
+    return res.status(201).send({status:true,data:createdData})
     }catch(error){
-        return res.status(500).send({status:false,error:error.message})
+        return res.status(500).send({status:false,message:error.message})
     }
 
 };
@@ -31,34 +54,35 @@ const createBlog=async (req,res)=>{
 
 const getBlogs = async function(req,res){
     try {
-        let result = { isDeleted: false, isPublished: true }
+        let blogObject = { isDeleted: false, isPublished: true }
         const {authorId,category,tags,subcategory} = req.query
 
         if (authorId) {
             if (!isValidObjectId(authorId)) {
                 return res.status(400).send({ status: false, msg: "Enter valid authorId" })
             } else {
-                result.authorId = authorId
+                blogObject.authorId = authorId
             }
         }
 
+
         if (category) {
-            result.category = category
+            blogObject.category = category
         }
 
         if (tags) {
-            result.tags = tags
+            blogObject.tags = tags
         }
         if (subcategory) {
-            result.subcategory = subcategory
+            blogObject.subcategory = subcategory
         }
 
-        let data = await blogModel.find(result);
-        if(data.length==0) return res.status(404).send("No such data");
+        let data = await blogModel.find(blogObject);
+        if(data.length==0) return res.status(404).send({status:false,message:"No such data"});
         return res.status(200).send({status:true, data:data})
         }
         catch (error) {
-    return res.status(500).send({status:false, error:error.message})
+    return res.status(500).send({status:false, message:error.message})
 }};
 
 //--------------------------------------------------------------------------------------------------------------------------------
