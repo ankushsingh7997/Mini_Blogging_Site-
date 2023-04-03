@@ -183,7 +183,7 @@ const deletById=async function(req,res){
 
     if(blogData.isDeleted) return res.status(404).send({status: false, message:"no such id"})
 
-    await blogModel.findOneAndUpdate({_id:blogData},{isDeleted:true,deletedAt:Date.now()})
+    await blogModel.findOneAndUpdate({_id:blogid},{isDeleted:true,deletedAt:Date.now()})
     
     return res.status(200).send({status: false, message:"blogg is deleted"})
      
@@ -198,21 +198,20 @@ const deleteQuery = async function(req, res) {
      
     const { category, authorId, isPublished, tags, subCategory } = req.query
 
-    if (!(category || authorId || isPublished || tags || subCategory)) {
-        return res.status(400).send({ status: false, msg: "Kindly enter any value" })
+    if (!category || !authorId || !isPublished || !tags || !subCategory) {
+        return res.status(400).send({ status: false, message: "Kindly enter some data" })
     }
     if(authorId){   
-    if(!isValidObjectId(authorId)) return res.status(400).send({ status: false, msg: "Enter valid authorId" })
+    if(!isValidObjectId(authorId)) return res.status(400).send({ status: false, message: "Enter valid authorId" })
 
     
     let authorLoggedIn = req.token
-    if (authorId != authorLoggedIn) return res.status(403).send({ status: false, msg: 'Access is Denied' })
+    if (authorId != authorLoggedIn) return res.status(403).send({ status: false, message: 'Access is Denied' })
 }
     let check=await blogModel.find({authorId:req.token,...req.query,isDeleted:false})
 
-    if(check.length==0) return res.status(404).send({error:"no such blog"})
-    let a=req.query.category
-
+    if(check.length==0) return res.status(404).send({status: false, message:"no such blog"})
+  
     const update = await blogModel.updateMany({authorId:req.token,...req.query,isDeleted:false}, 
     { isDeleted: true, deletedAt: Date.now(), new: true })
     return res.status(200).send({ status: true, data:`${check.length} data deleted`})
